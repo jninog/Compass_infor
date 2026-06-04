@@ -103,31 +103,28 @@ def status_compass(token,queryid):
     response.raise_for_status()
     return response.json()
 #--------------------------------
-# STATUS CONSULTA
+# wait_for_completion
 #--------------------------------
 
-def estado_consulta(token, queryid):
+def wait_for_completion(token, queryid, max_retries=60):
+    """Espera a que la consulta finalice con un límite de intentos."""
+    for attempt in range(max_retries):
+        try:
+            status_data = status_compass(token, queryid)
+            current_status = status_data.get("status")
+            print(f"Intento {attempt+1}: Estado actual -> {current_status}")
 
-    while True:
-
-        status = status_compass(
-            token,
-            queryid
-        )
-
-        current_status = status.get("status")
-
-        print("Estado actual:", current_status)
-
-        if current_status == "FINISHED":
-            print("Consulta finalizada")
-            break
-
-        if current_status == "FAILED":
-            raise Exception("La consulta falló")
-
-        time.sleep(5)
-        print(status)
+            if current_status == "FINISHED":
+                return True
+            elif current_status == "FAILED":
+                raise Exception(f"La consulta falló: {status_data.get('error', 'Sin detalle')}")
+            
+            time.sleep(5)
+        except requests.exceptions.RequestException as e:
+            print(f"Error consultando estado: {e}")
+            time.sleep(5)
+            
+    raise TimeoutError("La consulta excedió el tiempo máximo de espera.")
 
 # --------------------------------
 # RESULT COMPASS
@@ -158,19 +155,15 @@ def ejecutar_consulta(sql):
     Ejecuta el flujo completo de Compass:
     obtiene token, envía la consulta, espera a que finalice y devuelve el resultado.
     """
-
     token = get_token()
-    print("Token obtenido")
-
-    ping_response = ping_compass(token)
-    print("Status:", ping_response.status_code)
-    print("Respuesta:", ping_response.text)
-
     queryid = job_query(token, sql)
+        
+        # Solo procedemos si la espera fue exitosa
+    if wait_for_completion(token, queryid):        
+        return result_compass(token, queryid)   
 
-    estado_consulta(token, queryid)
-
-    return result_compass(token, queryid)
+    print(f"Error crítico en el flujo: {e}")
+    return None
 
 
 #--------------------------------

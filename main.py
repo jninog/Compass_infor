@@ -17,7 +17,7 @@ app = FastAPI(
 
         "API para ejecutar consultas SQL contra Infor Data Fabric Compass. "
 
-        "Obtiene token OAuth, envía el job, espera el estado FINISHED y devuelve el resultado."
+        "Obtiene token OAuth, envía el job, espera el estado FINISHED y devuelve un resultado."
 
     ),
 
@@ -109,4 +109,3 @@ def ejecutar_query(body: QueryRequest) -> QueryResponse:
 
 
     return QueryResponse(data=resultado)
-
