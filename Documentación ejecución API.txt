@@ -1,0 +1,29 @@
+Crear entorno virtual -----------> python -m venv .venv
+Activar entorno virtual -----------> .venv/Scripts/Activate
+Archivo con las librerias a utilizar (requirements) --------------> pip install -r requirements.txt
+Levantar servicio fast API ----------------> python -m uvicorn main:app --reload
+
+Montar el servicio en Render START COMMAND----------------->uvicorn main:app --host 0.0.0. --port $PORT
+
+
+
+
+SELECT  count(*)
+FROM oep70 oe INNER JOIN slp05 sl ON oe.cono70=sl.cono05 AND oe.dseq70=sl.dseq05 AND oe.cusn70=sl.cusn05
+INNER JOIN oep65 op ON oe.cono70=op.cono65 AND oe.dseq70=op.dseq65 AND oe.cusn70=op.cusn65 AND oe.invn70=op.invn65
+WHERE oe.pern70 = 12601
+
+
+SELECT oe.invn70 AS "Invoice number",
+oe.cusn70 AS "Customer code",
+sl.cnam05 AS "Customer name",
+COUNT(DISTINCT oe.invn70) AS "Total invoices",
+op.CURN65 AS "Currency",
+SUM(CAST(oe.lval70 AS decimal(18,2))) AS "Value",
+SUM(CAST(oe.lvat70 AS decimal(18,2))) as "Tax",
+SUM(CAST(oe.bliv70 AS decimal(18,2))) as "Total invoice"
+FROM oep70 oe INNER JOIN slp05 sl ON oe.cono70=sl.cono05 AND oe.dseq70=sl.dseq05 AND oe.cusn70=sl.cusn05
+INNER JOIN oep65 op ON oe.cono70=op.cono65 AND oe.dseq70=op.dseq65 AND oe.cusn70=op.cusn65 AND oe.invn70=op.invn65
+WHERE oe.pern70 = 12601 and oe.invn70 ='FC15765'
+GROUP BY oe.cusn70,sl.cnam05,oe.invn70,oe.pern70,op.CURN65
+ORDER BY "Total invoice" DESC
