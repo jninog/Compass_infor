@@ -2,7 +2,7 @@ import requests
 import time
 import os
 from dotenv import load_dotenv
-
+load_dotenv()  # Carga las variables de entorno desde el archivo .env
 #--------------------------------
 # OBTENER TOKEN
 #--------------------------------
@@ -17,9 +17,7 @@ def get_token():
         "username": os.getenv("USER_NAME"),
         "password": os.getenv("PASSWORD")
     }
-    print("TOKEN_URL:", os.getenv("TOKEN_URL"))
-    print("CLIENT_ID:", os.getenv("CLIENT_ID"))
-    print("USERNAME:", os.getenv("USER_NAME"))
+
     response = requests.post(
         os.getenv("TOKEN_URL"),
         data=data
