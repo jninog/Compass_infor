@@ -1,34 +1,27 @@
 import requests
 import time
 import os
-#--------------------------------
-# Parametros de conexiónnnnnn
-#--------------------------------
-
-TOKEN_URL = "https://mingle-sso.inforcloudsuite.com:443/SRXNDY9W53LA6625_TST/as/token.oauth2"
-
-CLIENT_ID = "SRXNDY9W53LA6625_TST~cijMlXjHBCAZKnr8ByemTWUtGRIntivAyL_GTX5yjj0"
-CLIENT_SECRET = "m3sGvNoi5Pseq6_g1HJb3iH6SYYeChavQOqILibAiZQr1HRRdPChsbrtqEZkLEZqGPcZO1AGkqjLNFn18ENNIA"
-USERNAME = "SRXNDY9W53LA6625_TST#en_B9Dfu2gD6Cvvl2gyPNGNg5hfooHTrXaHJMwbqPzBpHPuh_Bn5FekgCx_BecNt70zo_G7dK7n-QMTgWCpenQ"
-PASSWORD = "1JXCRsCGbZsVwQI7oNkXESJEF3cq64rhdl51roA18b7-tptFeqZJgiiacpno-7-w-NLErYW727FW-ysY2wDZhg"
-URL_BASE = "https://mingle-ionapi.inforcloudsuite.com/SRXNDY9W53LA6625_TST/DATAFABRIC/compass/v2"
+from dotenv import load_dotenv
 
 #--------------------------------
 # OBTENER TOKEN
 #--------------------------------
+load_dotenv()  # Carga las variables de entorno desde el archivo .env
 
 def get_token():
 
     data = {
         "grant_type": "password",
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-        "username": USERNAME,
-        "password": PASSWORD
+        "client_id": os.getenv("CLIENT_ID"),
+        "client_secret": os.getenv("CLIENT_SECRET"),
+        "username": os.getenv("USER_NAME"),
+        "password": os.getenv("PASSWORD")
     }
-
+    print("TOKEN_URL:", os.getenv("TOKEN_URL"))
+    print("CLIENT_ID:", os.getenv("CLIENT_ID"))
+    print("USERNAME:", os.getenv("USER_NAME"))
     response = requests.post(
-        TOKEN_URL,
+        os.getenv("TOKEN_URL"),
         data=data
     )
 
@@ -50,7 +43,7 @@ def ping_compass(token):
     }
 
     response = requests.get(
-        f"{URL_BASE}/ping",
+        f"{os.getenv('URL_BASE')}/ping",
         headers=headers
     )
 
@@ -69,11 +62,11 @@ def job_query(token,sql):
     }
 
     response = requests.post(
-        f"{URL_BASE}/jobs/?records=0",
+        f"{os.getenv('URL_BASE')}/jobs/?records=0",
         headers=headers,
         data=sql
     )
-    #print("URL:", URL_BASE)
+    #print("URL:", os.getenv('URL_BASE'))
     #print("HEADERS:", headers)
     #print("SQL:")
     #print(sql)
@@ -97,7 +90,7 @@ def status_compass(token,queryid):
     }
 
     response = requests.get(
-        f"{URL_BASE}/jobs/{queryid}/status/",
+        f"{os.getenv('URL_BASE')}/jobs/{queryid}/status/",
         headers=headers
     )
     response.raise_for_status()
@@ -118,6 +111,8 @@ def wait_for_completion(token, queryid, max_retries=60):
                 return True
             elif current_status == "FAILED":
                 raise Exception(f"La consulta falló: {status_data.get('error', 'Sin detalle')}")
+            elif current_status == "CANCELED ":
+                raise Exception(f"La consulta fue cancelada: {status_data.get('error', 'Sin detalle')}")
             
             time.sleep(5)
         except requests.exceptions.RequestException as e:
@@ -138,7 +133,7 @@ def result_compass(token,queryid):
     }
 
     response = requests.get(
-        f"{URL_BASE}/jobs/{queryid}/result/?limit=100",
+        f"{os.getenv('URL_BASE')}/jobs/{queryid}/result/?limit=100",
         headers=headers
     )
     response.raise_for_status()
@@ -162,7 +157,7 @@ def ejecutar_consulta(sql):
     if wait_for_completion(token, queryid):        
         return result_compass(token, queryid)   
 
-    print(f"Error crítico en el flujo: {e}")
+    print(f"Error crítico en el flujo: {queryid} no finalizó correctamente.")
     return None
 
 
