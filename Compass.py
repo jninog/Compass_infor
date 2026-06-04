@@ -2,7 +2,7 @@ import requests
 import time
 import os
 #--------------------------------
-# Parametros de conexión
+# Parametros de conexiónnnnnn
 #--------------------------------
 
 TOKEN_URL = "https://mingle-sso.inforcloudsuite.com:443/SRXNDY9W53LA6625_TST/as/token.oauth2"
